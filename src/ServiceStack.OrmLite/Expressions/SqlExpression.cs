@@ -75,14 +75,14 @@ namespace ServiceStack.OrmLite
         /// </param>
         public virtual SqlExpression<T> Select(string selectExpression)
         {
-
             if (string.IsNullOrEmpty(selectExpression))
             {
                 BuildSelectExpression(string.Empty, false);
             }
             else
             {
-                this.selectExpression = selectExpression;
+                selectExpression.SqlVerifyFragment();
+                this.selectExpression = "SELECT " + selectExpression;
             }
             return this;
         }
@@ -183,6 +183,7 @@ namespace ServiceStack.OrmLite
 
         public virtual SqlExpression<T> GroupBy(string groupBy)
         {
+            groupBy.SqlVerifyFragment();
             this.groupBy = groupBy;
             return this;
         }
@@ -225,8 +226,6 @@ namespace ServiceStack.OrmLite
             return this;
         }
 
-
-
         public virtual SqlExpression<T> OrderBy()
         {
             return OrderBy(string.Empty);
@@ -234,8 +233,11 @@ namespace ServiceStack.OrmLite
 
         public virtual SqlExpression<T> OrderBy(string orderBy)
         {
+            orderBy.SqlVerifyFragment();
             orderByProperties.Clear();
-            this.orderBy = orderBy;
+            this.orderBy = string.IsNullOrEmpty(orderBy)
+                ? null
+                : "ORDER BY " + orderBy;
             return this;
         }
 
@@ -755,8 +757,8 @@ namespace ServiceStack.OrmLite
 
             }
 
-            if (operand == "=" && right.ToString().Equals("null", StringComparison.InvariantCultureIgnoreCase)) operand = "is";
-            else if (operand == "<>" && right.ToString().Equals("null", StringComparison.InvariantCultureIgnoreCase)) operand = "is not";
+            if (operand == "=" && right.ToString().Equals("null", StringComparison.OrdinalIgnoreCase)) operand = "is";
+            else if (operand == "<>" && right.ToString().Equals("null", StringComparison.OrdinalIgnoreCase)) operand = "is not";
 
             switch (operand)
             {

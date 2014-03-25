@@ -126,7 +126,7 @@ namespace ServiceStack.OrmLite
             foreach (var setField in updateOnly.GetType().GetPublicProperties())
             {
                 var fieldDef = fields.FirstOrDefault(x => 
-                    string.Equals(x.Name, setField.Name, StringComparison.InvariantCultureIgnoreCase));
+                    string.Equals(x.Name, setField.Name, StringComparison.OrdinalIgnoreCase));
                 if (fieldDef == null) continue;
 
                 if (sql.Length > 0) 
@@ -170,11 +170,11 @@ namespace ServiceStack.OrmLite
             var sql = new StringBuilder("UPDATE ");
             sql.Append(OrmLiteConfig.DialectProvider.GetQuotedTableName(table));
             sql.Append(" SET ");
-            sql.Append(set);
+            sql.Append(set.SqlVerifyFragment());
             if (!string.IsNullOrEmpty(where))
             {
                 sql.Append(" WHERE ");
-                sql.Append(where);
+                sql.Append(where.SqlVerifyFragment());
             }
 
             return dbCmd.ExecuteSql(sql.ToString());
@@ -269,7 +269,9 @@ namespace ServiceStack.OrmLite
                 throw new ArgumentNullException("where");
 
             var sql = new StringBuilder();
-            sql.AppendFormat("DELETE FROM {0} WHERE {1}",  OrmLiteConfig.DialectProvider.GetQuotedTableName(table), where);
+            sql.AppendFormat("DELETE FROM {0} WHERE {1}",  
+                OrmLiteConfig.DialectProvider.GetQuotedTableName(table), 
+                where.SqlVerifyFragment());
 
             return dbCmd.ExecuteSql(sql.ToString());
         }
